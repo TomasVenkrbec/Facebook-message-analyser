@@ -86,7 +86,9 @@ class Conversation:
     
     def create_graphs(self):
         if self.weekday_frequency:
-            plt.title("Message frequency during weekdays")
+            title = "Message frequency during weekdays"
+            plt.figure(title)
+            plt.title(title)
             plt.xlabel("Days of week")
             plt.ylabel("Message count")
             x, y = zip(*sorted(self.weekday_frequency.items()))
@@ -103,7 +105,9 @@ class Conversation:
             plt.show()
         
         if self.hour_frequency:
-            plt.title("Message frequency during hours of day")
+            title = "Message frequency during hours of day"
+            plt.figure(title)
+            plt.title(title)
             plt.xlabel("Hours of day")
             plt.ylabel("Message count")
             x, y = zip(*sorted(self.hour_frequency.items()))
@@ -111,25 +115,37 @@ class Conversation:
             plt.show()
 
         if self.day_frequency:
-            plt.title("Message frequency over time")
+            title = "Message frequency over time"
+            plt.figure(title)
+            plt.title(title)
             plt.xlabel("Day")
             plt.ylabel("Message count")
             
             # Sort by date and divide into x and y axis
             x = sorted(self.day_frequency.items(), key=sortkey_date)
-            x, y = zip(*x)
+            dates, counts = zip(*x)
 
             # Make 7-day rolling average using discrete convolution
-            y = np.convolve(y, np.ones(AVERAGE_MESSAGE_ROLLING_WINDOW), 'valid') / AVERAGE_MESSAGE_ROLLING_WINDOW
-            x = x[AVERAGE_MESSAGE_ROLLING_WINDOW-1:] # Cut off starting dates so the lengths are the same (convolution without padding cuts edges)
-            x_positions, x_ticks = calculate_ticks_month_year([y.split()[0] for y in x], [y.split()[2] for y in x]) # Get months and years
+            counts = np.convolve(counts, np.ones(AVERAGE_MESSAGE_ROLLING_WINDOW), 'valid') / AVERAGE_MESSAGE_ROLLING_WINDOW
+            dates = dates[AVERAGE_MESSAGE_ROLLING_WINDOW-1:] # Cut off starting dates so the lengths are the same (convolution without padding cuts edges)
+            x_positions, x_ticks = calculate_ticks_month_year([date.split()[0] for date in dates], [date.split()[2] for date in dates]) # Get months and years
+            if x_positions[1] - x_positions[0] < 16: # If the distance between first ticks is not even half of a month, remove first one
+                x_positions = x_positions[1:]
+                x_ticks = x_ticks[1:]
             plt.xticks(x_positions, x_ticks, rotation=45)
 
-            plt.plot(x, y)
+            plt.plot(dates, counts)
+            plt.show()
+
+            plt.title("Message count over time")
+            plt.xticks(x_positions, x_ticks, rotation=45)
+            plt.plot(dates, np.cumsum(counts))
             plt.show()
         
         if self.participants_message_count:
-            plt.title("Message count from conversation participants")
+            title = "Message count from conversation participants"
+            plt.figure(title)
+            plt.title(title)
             plt.xlabel("Participant")
             plt.ylabel("Message count")
             x, y = zip(*sorted(self.participants_message_count.items()))
@@ -137,7 +153,9 @@ class Conversation:
             plt.show()
         
             x = np.linspace(0, 200)
-            plt.title("Message length probability from conversation participants")
+            title = "Message length probability from conversation participants"
+            plt.figure(title)
+            plt.title(title)
             plt.xlabel("Message length")
             plt.ylabel("Probability density")
 
@@ -152,7 +170,9 @@ class Conversation:
             plt.show()
         
         if self.emoji_frequency:
-            plt.title("Emoji usage frequency in conversation")
+            title = "Emoji usage frequency in conversation"
+            plt.figure(title)
+            plt.title(title)
             plt.xlabel("Emoji")
             plt.ylabel("Emoji usage count")
 
